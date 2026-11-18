@@ -9,7 +9,7 @@ import subprocess
 import signal
 from tempfile import TemporaryDirectory
 
-from .backend_config import default_install_path, python_path
+from .backend_config import MANAGED, default_install_path, python_path
 
 PROTOCOL = 1
 
@@ -19,7 +19,11 @@ def default_backend():
     if python_path(path).is_file():
         return str(path)
     path = Path(default_install_path())
-    return str(path) if python_path(path).is_file() else ""
+    try:
+        ready = json.loads((path / MANAGED).read_text(encoding="utf-8")).get("state") == "ready"
+    except (OSError, ValueError):
+        ready = False
+    return str(path) if ready and python_path(path).is_file() else ""
 
 
 def child_environment():
