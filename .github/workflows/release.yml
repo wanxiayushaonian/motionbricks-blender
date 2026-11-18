@@ -1,0 +1,50 @@
+name: Build extension
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BLENDER_VERSION: "5.1.2"
+    steps:
+      - name: Fetch source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh repo clone "$GITHUB_REPOSITORY" source -- --depth=1 --branch "$GITHUB_REF_NAME"
+          cd source
+          test -f motionbricks_blender/blender_manifest.toml
+      - name: Download Blender
+        run: |
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.1/blender-${BLENDER_VERSION}-linux-x64.tar.xz" -o blender.tar.xz
+          curl -fL --retry 3 "https://download.blender.org/release/Blender5.1/blender-${BLENDER_VERSION}.sha256" -o blender.sha256
+          mv blender.tar.xz "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
+          sha256sum --ignore-missing -c blender.sha256
+          tar -xf "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
+      - name: Build and validate
+        working-directory: source
+        run: |
+          python -m compileall -q motionbricks_blender
+          python tests/test_backend_setup.py
+          version=$(python -c "import tomllib; print(tomllib.load(open('motionbricks_blender/blender_manifest.toml','rb'))['version'])")
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            test "$GITHUB_REF_NAME" = "v$version"
+          fi
+          "../blender-${BLENDER_VERSION}-linux-x64/blender" --command extension build --source-dir motionbricks_blender --output-dir dist
+          "../blender-${BLENDER_VERSION}-linux-x64/blender" --command extension validate "dist/motionbricks_blender-$version.zip"
+          cd dist
+          sha256sum "motionbricks_blender-$version.zip" > SHA256SUMS
+      - name: Publish test release
+        if: github.ref_type == 'tag'
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --prerelease --verify-tag             --title "MotionBricks Blender $GITHUB_REF_NAME (test release)"             --notes "Linux x86-64 / Blender 5.1.2 tested. Windows installation and GPU inference need validation. See README and docs/installation.md for backend setup and asset licenses."             dist/motionbricks_blender-*.zip dist/SHA256SUMS

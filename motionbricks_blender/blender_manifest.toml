@@ -1,0 +1,17 @@
+schema_version = "1.0.0"
+id = "motionbricks_blender"
+version = "0.10.0"
+name = "MotionBricks"
+tagline = "Browse motions and generate editable SOMA transitions"
+maintainer = "MotionBricks Blender contributors"
+type = "add-on"
+blender_version_min = "5.1.2"
+license = ["SPDX:GPL-3.0-or-later"]
+tags = ["Animation"]
+
+[permissions]
+network = "从官方 GitHub 下载用户选择的 MotionBricks 后端和模型，并安装 Python 依赖"
+files = "读写本地 MotionBricks 录制与动作文件，并与推理子进程交换临时任务文件"
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "**/__pycache__/", "*.pyc"]
