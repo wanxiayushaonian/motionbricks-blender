@@ -2,6 +2,8 @@
 
 当前发布为测试版。已验证环境是 Blender 5.1.2、Linux x86-64 和 NVIDIA RTX 4060 Laptop GPU。Windows 的 Python 路径已适配，完整安装与 GPU 流程待实测。后端使用 Python 3.12，固定官方 MotionBricks v0.2.0 提交 `54fc563aeaaf819a753d72cc9fdc6713989cdd43`。
 
+已验证连接现有环境、官方资源下载与校验、取消及重试保护，以及实际补间。完整冷缓存依赖安装本轮中止，仍待独立验证。
+
 ## 安装插件和新后端
 
 1. 在本仓库 GitHub Releases 下载 `motionbricks_blender-0.10.0.zip`。Blender 中打开「编辑 > 偏好设置 > 获取扩展 > 从磁盘安装」，选择 ZIP 并启用。

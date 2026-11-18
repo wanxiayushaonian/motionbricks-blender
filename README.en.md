@@ -2,7 +2,7 @@
 
 A community Blender extension for browsing SOMA motion, capturing reusable poses, generating transitions, and exchanging body animation with MMD.
 
-The current release is an experimental build. Tested with Blender 5.1.2 on Linux x86-64 and an NVIDIA RTX 4060 Laptop GPU. Windows path handling is implemented; Windows installation and GPU inference still require validation.
+The current release is an experimental build. Tested with Blender 5.1.2 on Linux x86-64 and an NVIDIA RTX 4060 Laptop GPU. Windows path handling is implemented; Windows installation and GPU inference still require validation. Existing-backend connection, asset downloads and checks, and generation are tested. A complete cold-cache dependency installation is still pending.
 
 ## Install
 

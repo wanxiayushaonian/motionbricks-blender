@@ -29,16 +29,26 @@ jobs:
           mv blender.tar.xz "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
           sha256sum --ignore-missing -c blender.sha256
           tar -xf "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
-      - name: Build and validate
+      - name: Install Blender system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-6 libxxf86vm1 libxfixes3 libxi6 libxrender1 libgl1 libegl1 libxkbcommon0 libsm6
+      - name: Python checks
         working-directory: source
         run: |
           python -m compileall -q motionbricks_blender
           python tests/test_backend_setup.py
+      - name: Build and validate
+        working-directory: source
+        run: |
           version=$(python -c "import tomllib; print(tomllib.load(open('motionbricks_blender/blender_manifest.toml','rb'))['version'])")
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             test "$GITHUB_REF_NAME" = "v$version"
           fi
-          "../blender-${BLENDER_VERSION}-linux-x64/blender" --command extension build --source-dir motionbricks_blender --output-dir dist
+          if ! "../blender-${BLENDER_VERSION}-linux-x64/blender" --command extension build --source-dir motionbricks_blender --output-dir dist > build.log 2>&1; then
+            python -c "from pathlib import Path; print('::error::' + Path('build.log').read_text()[-1800:].replace('%','%25').replace(chr(10),'%0A'))"
+            exit 1
+          fi
           "../blender-${BLENDER_VERSION}-linux-x64/blender" --command extension validate "dist/motionbricks_blender-$version.zip"
           cd dist
           sha256sum "motionbricks_blender-$version.zip" > SHA256SUMS

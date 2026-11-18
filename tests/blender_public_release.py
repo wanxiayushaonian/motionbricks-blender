@@ -1,4 +1,4 @@
-"""Verify the packaged extension against a freshly installed official backend."""
+"""Verify the packaged extension against a configured backend."""
 
 import json
 from pathlib import Path
@@ -48,5 +48,4 @@ assert generated is not None
 set_frame(bpy.context.scene, generated.frame_range[-1])
 assert (Vector(adapter.capture()[0][:3]) - expected).length < .001
 assert not any(clip.path for clip in state.clips)
-print("PASS: packaged 0.9.0 to 0.10.0 update, diagnostic, fresh official rig and authored-pose generation", flush=True)
-addon.unregister()
+print("PASS: packaged 0.9.0 to 0.10.0 update, diagnostic, official rig and authored-pose generation", flush=True)
