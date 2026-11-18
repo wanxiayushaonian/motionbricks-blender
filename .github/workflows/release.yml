@@ -21,6 +21,8 @@ jobs:
         run: |
           gh repo clone "$GITHUB_REPOSITORY" source -- --depth=1 --branch "$GITHUB_REF_NAME"
           cd source
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach "$GITHUB_SHA"
           test -f motionbricks_blender/blender_manifest.toml
       - name: Download Blender
         run: |
@@ -29,10 +31,6 @@ jobs:
           mv blender.tar.xz "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
           sha256sum --ignore-missing -c blender.sha256
           tar -xf "blender-${BLENDER_VERSION}-linux-x64.tar.xz"
-      - name: Install Blender system libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libx11-6 libxxf86vm1 libxfixes3 libxi6 libxrender1 libgl1 libegl1 libxkbcommon0 libsm6
       - name: Python checks
         working-directory: source
         run: |
@@ -41,6 +39,7 @@ jobs:
       - name: Build and validate
         working-directory: source
         run: |
+          mkdir -p dist
           version=$(python -c "import tomllib; print(tomllib.load(open('motionbricks_blender/blender_manifest.toml','rb'))['version'])")
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             test "$GITHUB_REF_NAME" = "v$version"
